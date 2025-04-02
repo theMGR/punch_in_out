@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:punch_in_out/helper/database_helper.dart';
 import 'package:punch_in_out/pages/login/login_screen.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 class StaffDashboardScreen extends StatefulWidget {
   const StaffDashboardScreen({super.key});
@@ -66,7 +66,6 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
 
   @override
   void dispose() {
-    controller?.dispose();
     super.dispose();
   }
 

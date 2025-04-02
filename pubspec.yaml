@@ -16,7 +16,7 @@ dependencies:
   path:
   get:
   intl:
-  qr_code_scanner:
+  qr_code_scanner_plus:
   geolocator:
 
 dev_dependencies:
