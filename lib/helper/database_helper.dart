@@ -1,4 +1,6 @@
 import 'package:path/path.dart';
+import 'package:punch_in_out/constants/value_constant.dart';
+import 'package:punch_in_out/dto/user_dto.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
@@ -32,23 +34,116 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        userType INTEGER NOT NULL
+        userType TEXT NOT NULL,
+        punchIn TEXT,
+        punchOut TEXT,
+        punchInLat REAL,
+        punchInLon REAL,
+        punchOutLat REAL,
+        punchOutLon REAL,
+        punchInScanData TEXT,
+        punchOutScanData TEXT
       )
     ''');
   }
 
-  Future<void> createUser(String username, String password, int userType) async {
-    final db = await instance.database;
-    await db.insert('users', {
-      'username': username,
-      'password': password,
-      'userType': userType,
-    });
+  Future<void> deleteDb() async{
+    await deleteDatabase(join(await getDatabasesPath(), 'punch_app.db'));
   }
 
-  Future<int?> authenticateUser(String username, String password) async {
+  Future<int> createUser(UserDto user) async {
+    final db = await instance.database;
+    return await db.insert('users', user.toJson());
+  }
+
+  Future<int?> deleteUser(int? userId) async {
+    final db = await instance.database;
+    if(userId != null) {
+      return await db.delete(
+        'users',
+        where: 'id = ?',
+        whereArgs: [userId],
+      );
+    } else {
+      return null;
+    }
+  }
+
+  Future<int?> updatePunchInOut({required int userId, required String punchInOutTime, double? latitude, double? longitude, required int punchType, String? punchInOutScanData}) async {
+    final db = await instance.database;
+    if (punchType == 1) {
+      return await db.update(
+        'users',
+        {'punchIn': punchInOutTime, 'punchInLat': latitude, 'punchInLon': longitude, 'punchInScanData': punchInOutScanData},
+        where: 'id = ?',
+        whereArgs: [userId],
+      );
+    } else if (punchType == 2) {
+      return await db.update(
+        'users',
+        {'punchOut': punchInOutTime, 'punchOutLat': latitude, 'punchOutLon': longitude,'punchOutScanData': punchInOutScanData},
+        where: 'id = ?',
+        whereArgs: [userId],
+      );
+    } else {
+      return null;
+    }
+  }
+
+  Future<void> updatePunchIn(int userId, String punchInTime, double? lat, double? lon) async {
+    final db = await instance.database;
+    await db.update(
+      'users',
+      {
+        'punchIn': punchInTime,
+        'punchInLat': lat,
+        'punchInLon': lon
+      },
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<void> updatePunchOut(int userId, String punchOutTime, double? lat, double? lon) async {
+    final db = await instance.database;
+    await db.update(
+      'users',
+      {
+        'punchOut': punchOutTime,
+        'punchOutLat': lat,
+        'punchOutLon': lon
+      },
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<bool> checkUserExists(String username) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'users',
+      where: 'username = ?',
+      whereArgs: [username],
+    );
+    return result.isNotEmpty;
+  }
+
+
+  Future<UserDto?> authenticateUser(String username, String password) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'users',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
+    return result.isNotEmpty ? UserDto.fromJson(result.first) : null;
+  }
+
+
+
+  /*Future<String?> authenticateUser(String username, String password) async {
     final db = await instance.database;
     final result = await db.query(
       'users',
@@ -56,7 +151,7 @@ class DatabaseHelper {
       whereArgs: [username, password],
     );
     if (result.isNotEmpty) {
-      return result.first['userType'] as int;
+      return result.first['userType'] as String;
     }
     return null;
   }
@@ -85,19 +180,22 @@ class DatabaseHelper {
       };
     }
     return {'punchIn': null, 'punchOut': null};
-  }
+  }*/
 
-  Future<List<Map<String, dynamic>>> getStaffRecords([String? date]) async {
+  Future<List<UserDto>> getStaffRecords([String? date]) async {
     final db = await instance.database;
-    String query = 'SELECT * FROM punches WHERE punchOut IS NULL';
+    //String query = 'SELECT * FROM users WHERE userType = '${ValueConstant.staff}' AND punchIn IS NOT NULL';
+    String query = "SELECT * FROM users WHERE userType = '${ValueConstant.staff}' AND punchIn IS NOT NULL";
     List<Map<String, dynamic>> result;
 
     if (date != null) {
-      query = 'SELECT * FROM punches WHERE DATE(punchIn) = ?';
-      result = await db.rawQuery(query, [date]);
+      query = 'SELECT * FROM users WHERE DATE(punchIn) = ? OR DATE(punchOut) = ?';
+      result = await db.rawQuery(query, [date, date]);
     } else {
       result = await db.rawQuery(query);
     }
-    return result;
+
+    print('****> result: ${result.length}');
+    return result.map((json) => UserDto.fromJson(json)).toList();
   }
 }
