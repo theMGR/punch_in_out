@@ -49,7 +49,7 @@ class DatabaseHelper {
     ''');
   }
 
-  Future<void> deleteDb() async{
+  Future<void> deleteDb() async {
     await deleteDatabase(join(await getDatabasesPath(), 'punch_app.db'));
   }
 
@@ -60,7 +60,7 @@ class DatabaseHelper {
 
   Future<int?> deleteUser(int? userId) async {
     final db = await instance.database;
-    if(userId != null) {
+    if (userId != null) {
       return await db.delete(
         'users',
         where: 'id = ?',
@@ -83,7 +83,7 @@ class DatabaseHelper {
     } else if (punchType == 2) {
       return await db.update(
         'users',
-        {'punchOut': punchInOutTime, 'punchOutLat': latitude, 'punchOutLon': longitude,'punchOutScanData': punchInOutScanData},
+        {'punchOut': punchInOutTime, 'punchOutLat': latitude, 'punchOutLon': longitude, 'punchOutScanData': punchInOutScanData},
         where: 'id = ?',
         whereArgs: [userId],
       );
@@ -96,11 +96,7 @@ class DatabaseHelper {
     final db = await instance.database;
     await db.update(
       'users',
-      {
-        'punchIn': punchInTime,
-        'punchInLat': lat,
-        'punchInLon': lon
-      },
+      {'punchIn': punchInTime, 'punchInLat': lat, 'punchInLon': lon},
       where: 'id = ?',
       whereArgs: [userId],
     );
@@ -110,11 +106,7 @@ class DatabaseHelper {
     final db = await instance.database;
     await db.update(
       'users',
-      {
-        'punchOut': punchOutTime,
-        'punchOutLat': lat,
-        'punchOutLon': lon
-      },
+      {'punchOut': punchOutTime, 'punchOutLat': lat, 'punchOutLon': lon},
       where: 'id = ?',
       whereArgs: [userId],
     );
@@ -130,7 +122,6 @@ class DatabaseHelper {
     return result.isNotEmpty;
   }
 
-
   Future<UserDto?> authenticateUser(String username, String password) async {
     final db = await instance.database;
     final result = await db.query(
@@ -141,50 +132,8 @@ class DatabaseHelper {
     return result.isNotEmpty ? UserDto.fromJson(result.first) : null;
   }
 
-
-
-  /*Future<String?> authenticateUser(String username, String password) async {
-    final db = await instance.database;
-    final result = await db.query(
-      'users',
-      where: 'username = ? AND password = ?',
-      whereArgs: [username, password],
-    );
-    if (result.isNotEmpty) {
-      return result.first['userType'] as String;
-    }
-    return null;
-  }
-
-  Future<void> punchIn(String time) async {
-    final db = await instance.database;
-    await db.insert('punches', {'punchIn': time, 'punchOut': null});
-  }
-
-  Future<void> punchOut(String time) async {
-    final db = await instance.database;
-    await db.rawUpdate('''
-      UPDATE punches
-      SET punchOut = ?
-      WHERE punchOut IS NULL
-    ''', [time]);
-  }
-
-  Future<Map<String, String?>> getLastPunch() async {
-    final db = await instance.database;
-    final result = await db.query('punches', orderBy: 'id DESC', limit: 1);
-    if (result.isNotEmpty) {
-      return {
-        'punchIn': result.first['punchIn'] as String?,
-        'punchOut': result.first['punchOut'] as String?,
-      };
-    }
-    return {'punchIn': null, 'punchOut': null};
-  }*/
-
   Future<List<UserDto>> getStaffRecords([String? date]) async {
     final db = await instance.database;
-    //String query = 'SELECT * FROM users WHERE userType = '${ValueConstant.staff}' AND punchIn IS NOT NULL';
     String query = "SELECT * FROM users WHERE userType = '${ValueConstant.staff}' AND punchIn IS NOT NULL";
     List<Map<String, dynamic>> result;
 
@@ -195,7 +144,6 @@ class DatabaseHelper {
       result = await db.rawQuery(query);
     }
 
-    print('****> result: ${result.length}');
     return result.map((json) => UserDto.fromJson(json)).toList();
   }
 }

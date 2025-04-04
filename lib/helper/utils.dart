@@ -28,11 +28,13 @@ class Utils {
 
   static void getLocationPermission() async {
     if (await Permission.location.isGranted == false || await Permission.locationWhenInUse.isGranted == false) {
-      await Permission.location.request().then((value) async{
-        if(value.isGranted == true) {
-          await Permission.locationWhenInUse.request();
-        }
-      },);
+      await Permission.location.request().then(
+        (value) async {
+          if (value.isGranted == true) {
+            await Permission.locationWhenInUse.request();
+          }
+        },
+      );
     }
   }
 }

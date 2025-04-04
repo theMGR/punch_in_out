@@ -6,7 +6,6 @@ import 'package:punch_in_out/dto/user_dto.dart';
 import 'package:punch_in_out/helper/database_helper.dart';
 import 'package:punch_in_out/helper/utils.dart';
 import 'package:punch_in_out/pages/landing/landing_screen.dart';
-import 'package:punch_in_out/pages/login/login_screen.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 class StaffDashboardScreen extends StatefulWidget {
@@ -41,7 +40,6 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
     controller = qrController;
     controller?.resumeCamera();
     controller?.scannedDataStream.listen((scanData) {
-
       if (scanData.code != null && scanData.code!.removeAllWhitespace.isNotEmpty) {
         enableQrView.value = false;
         qrController.pauseCamera();

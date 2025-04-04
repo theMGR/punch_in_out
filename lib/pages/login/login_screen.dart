@@ -16,16 +16,17 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login'),
+      appBar: AppBar(
+        title: Text('Login'),
         actions: [
           IconButton(
             icon: Icon(Icons.arrow_back_sharp),
-            onPressed: () async{
+            onPressed: () async {
               Get.offAll(LandingScreen());
             },
           )
-        ],),
-
+        ],
+      ),
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Column(
@@ -47,7 +48,9 @@ class LoginScreen extends StatelessWidget {
                 onPressed: () async {
                   await DatabaseHelper.instance.authenticateUser(usernameController.text.removeAllWhitespace, passwordController.text.removeAllWhitespace).then((user) {
                     if (user?.userType == ValueConstant.admin) {
-                      Get.offAll(AdminDashboardScreen(userDto: user!,));
+                      Get.offAll(AdminDashboardScreen(
+                        userDto: user!,
+                      ));
                     } else if (user?.userType == ValueConstant.staff) {
                       Get.offAll(StaffDashboardScreen(userDto: user!));
                     } else {

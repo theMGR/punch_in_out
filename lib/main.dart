@@ -12,7 +12,6 @@ import 'helper/database_helper.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
@@ -22,12 +21,13 @@ void main() async {
     databaseFactory = databaseFactoryFfiWeb;
   }
 
-
   await DatabaseHelper.instance.initDatabase();
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
