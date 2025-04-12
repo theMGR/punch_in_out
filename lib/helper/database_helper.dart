@@ -1,5 +1,6 @@
 import 'package:path/path.dart';
 import 'package:punch_in_out/constants/value_constant.dart';
+import 'package:punch_in_out/dto/event_dto.dart';
 import 'package:punch_in_out/dto/user_dto.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -47,6 +48,16 @@ class DatabaseHelper {
         punchOutScanData TEXT
       )
     ''');
+
+    db.execute('''
+        CREATE TABLE events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT,
+          notes TEXT,
+          date TEXT,
+          company TEXT
+        )
+      ''');
   }
 
   Future<void> deleteDb() async {
@@ -145,5 +156,27 @@ class DatabaseHelper {
     }
 
     return result.map((json) => UserDto.fromJson(json)).toList();
+  }
+
+  //
+  Future<List<EventDto>> getEvents() async {
+    final db = await database;
+    final result = await db.query('events');
+    return result.map((e) => EventDto.fromJson(e)).toList();
+  }
+
+  Future<void> insertEvent(EventDto event) async {
+    final db = await database;
+    await db.insert('events', event.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<void> updateEvent(EventDto event) async {
+    final db = await database;
+    await db.update('events', event.toJson(), where: 'id = ?', whereArgs: [event.id]);
+  }
+
+  Future<void> deleteEvent(int id) async {
+    final db = await database;
+    await db.delete('events', where: 'id = ?', whereArgs: [id]);
   }
 }

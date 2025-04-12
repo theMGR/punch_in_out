@@ -19,6 +19,7 @@ dependencies:
   qr_code_scanner_plus:
   geolocator:
   permission_handler:
+  table_calendar:
 
 dev_dependencies:
   flutter_test:
