@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import 'package:punch_in_out/dto/event_dto.dart';
 import 'package:punch_in_out/helper/database_helper.dart';
+import 'package:punch_in_out/helper/utils.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalendarController extends GetxController {
@@ -11,6 +12,8 @@ class CalendarController extends GetxController {
   var searchQuery = ''.obs;
   var allEvents = <EventDto>[].obs;
   Rx<CalendarFormat> calendarFormat = CalendarFormat.month.obs;
+  List<String> listCompany = ['All', 'Company A', 'Company B'];
+  RxBool floatingButtonVisibility = true.obs;
 
   @override
   void onInit() {
@@ -62,51 +65,63 @@ class CalendarController extends GetxController {
   }
 
   void showAddEditDialog(BuildContext context, {bool isEdit = false, EventDto? event}) {
-    final titleCtrl = TextEditingController(text: event?.title ?? '');
-    final notesCtrl = TextEditingController(text: event?.notes ?? '');
+    Rx<TextEditingController> titleCtrl = TextEditingController().obs;
+    Rx<TextEditingController> notesCtrl = TextEditingController().obs;
+    titleCtrl.value.text = event?.title ?? '';
+    notesCtrl.value.text = event?.notes ?? '';
+
     final company = isEdit
         ? event!.company
-        : selectedCompany.value != 'All'
+        : selectedCompany.value != listCompany[0]
             ? selectedCompany.value
-            : 'Company A';
+            : listCompany[1];
     String selected = company!;
 
-    showDialog(
-      context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: Text(isEdit ? 'Edit Event' : 'Add Event'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: titleCtrl, decoration: InputDecoration(labelText: 'Title')),
-              if (selectedCompany.value == 'All' || isEdit)
-                DropdownButtonFormField<String>(
-                  value: selected,
-                  onChanged: (val) => selected = val!,
-                  items: ['Company A', 'Company B'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                ),
-              TextField(controller: notesCtrl, decoration: InputDecoration(labelText: 'Notes')),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                final title = titleCtrl.text.trim();
-                final notes = notesCtrl.text.trim();
-                if (title.isEmpty) return;
-                if (isEdit && event != null) {
-                  updateEvent(EventDto(id: event.id, title: title, notes: notes, date: event.date, company: selected));
-                } else {
-                  addEvent(EventDto(title: title, date: selectedDay.value, company: selected));
-                }
-                Get.back();
-              },
-              child: Text('Save'),
+    Get.defaultDialog(
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (selectedCompany.value == listCompany[0] || isEdit)
+              DropdownButtonFormField<String>(
+                value: selected,
+                onChanged: (val) => selected = val!,
+                items: listCompany.where((s) => s != listCompany[0],).map((e) {
+                  return DropdownMenuItem(value: e, child: Text(e));
+                }).toList(),
+              ),
+            SizedBox(height: 12),
+            TextField(controller: titleCtrl.value, decoration: InputDecoration(labelText: 'Title', hintStyle: TextStyle(color: Colors.grey)), onChanged: (value) {
+              titleCtrl.refresh();
+            },),
+            SizedBox(height: 12),
+            TextField(controller: notesCtrl.value, decoration: InputDecoration(labelText: 'Notes', hintStyle: TextStyle(color: Colors.grey))),
+            Row(
+              children: [
+                TextButton(child: Text('Cancel'), onPressed: () => Get.back()),
+                Obx(() => TextButton(
+                    child: Text(
+                      'Save',
+                      style: TextStyle(color: titleCtrl.value.text.trim().isEmpty ? Colors.grey : null),
+                    ),
+                    onPressed: () {
+                      if (titleCtrl.value.text.trim().isNotEmpty) {
+                        final title = titleCtrl.value.text.trim();
+                        final notes = notesCtrl.value.text.trim();
+                        if (title.isEmpty) return;
+                        if (isEdit && event != null) {
+                          updateEvent(EventDto(id: event.id, title: title, notes: notes, date: event.date, company: selected));
+                        } else {
+                          addEvent(EventDto(title: title, notes: notes, date: selectedDay.value, company: selected));
+                        }
+                        Get.back();
+                      }
+                    }))
+              ],
             )
           ],
-        );
-      },
+        ),
+      ),contentPadding: EdgeInsets.all(12)
     );
   }
 }

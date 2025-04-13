@@ -5,10 +5,12 @@ import 'package:permission_handler/permission_handler.dart';
 class Utils {
   Utils._();
 
-  static Widget getButton({required String text, required Function() onPressed}) {
+  static Widget getButton({required String text, required Function() onPressed, Color? backgroundColor, Color? foregroundColor}) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         minimumSize: Size(double.infinity, 50),
+        backgroundColor: backgroundColor,
+        foregroundColor: foregroundColor,
       ),
       onPressed: onPressed,
       child: Text(text),
