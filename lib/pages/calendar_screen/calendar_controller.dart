@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:punch_in_out/dto/event_dto.dart';
 import 'package:punch_in_out/helper/database_helper.dart';
-import 'package:punch_in_out/helper/utils.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalendarController extends GetxController {
